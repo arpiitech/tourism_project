@@ -9,8 +9,6 @@ import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
 import warnings
 import os
 warnings.filterwarnings('ignore')

@@ -1,20 +1,24 @@
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
-from sklearn.model_selection import GridSearchCV
-from huggingface_hub import HfApi, login
-import xgboost as xgb
+import os
+import warnings
+
+import joblib
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
-from datasets import load_dataset
-import joblib
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
-import warnings
-import os
+import xgboost as xgb
+from datasets import load_dataset
+from huggingface_hub import HfApi, login
+from sklearn.ensemble import (AdaBoostClassifier, GradientBoostingClassifier,
+                              RandomForestClassifier)
+from sklearn.metrics import (accuracy_score, classification_report, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
+
 warnings.filterwarnings('ignore')
 
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -32,59 +36,10 @@ try:
     test_dataset = load_dataset("arnavarpit/VUA-MLOPS-test", split="train")
     test_df = test_dataset.to_pandas()
     print("Data loaded from HuggingFace")
-except Exception as e:
-    print(f"Failed to load from HuggingFace: {e}")
-    print("Attempting to load local files...")
-    try:
-        train_df = pd.read_csv("data/train_data.csv")
-        test_df = pd.read_csv("data/test_data.csv")
-        print("Data loaded locally")
-    except FileNotFoundError as fe:
-        print(f"Local files not found: {fe}")
-        print("Creating dummy data for testing...")
-        # Create minimal dummy data for testing
-        import numpy as np
-        np.random.seed(42)
-        
-        # Create dummy training data
-        n_train = 1000
-        train_data = {
-            'CustomerID': range(300000, 300000 + n_train),
-            'Age': np.random.randint(18, 80, n_train),
-            'TypeofContact': np.random.randint(0, 2, n_train),
-            'CityTier': np.random.randint(1, 4, n_train),
-            'DurationOfPitch': np.random.randint(5, 60, n_train),
-            'Occupation': np.random.randint(0, 3, n_train),
-            'Gender': np.random.randint(0, 2, n_train),
-            'NumberOfPersonVisiting': np.random.randint(1, 6, n_train),
-            'NumberOfFollowups': np.random.randint(0, 7, n_train),
-            'ProductPitched': np.random.randint(0, 4, n_train),
-            'PreferredPropertyStar': np.random.uniform(1, 5, n_train),
-            'MaritalStatus': np.random.randint(0, 4, n_train),
-            'NumberOfTrips': np.random.uniform(0, 10, n_train),
-            'Passport': np.random.randint(0, 2, n_train),
-            'PitchSatisfactionScore': np.random.randint(1, 6, n_train),
-            'OwnCar': np.random.randint(0, 2, n_train),
-            'NumberOfChildrenVisiting': np.random.randint(0, 4, n_train),
-            'Designation': np.random.randint(0, 5, n_train),
-            'MonthlyIncome': np.random.randint(10000, 50000, n_train),
-            'IncomeCategory': np.random.randint(0, 4, n_train),
-            'AgeGroup': np.random.randint(0, 5, n_train),
-            'ProdTaken': np.random.randint(0, 2, n_train)
-        }
-        train_df = pd.DataFrame(train_data)
-        
-        # Create dummy test data
-        n_test = 250
-        test_data = train_data.copy()
-        for key in test_data:
-            if key == 'CustomerID':
-                test_data[key] = range(400000, 400000 + n_test)
-            else:
-                test_data[key] = test_data[key][:n_test]
-        test_df = pd.DataFrame(test_data)
-        
-        print(f"Created dummy data - Train: {len(train_df)}, Test: {len(test_df)}")
+except:
+    train_df = pd.read_csv("data/train_data.csv")
+    test_df = pd.read_csv("data/test_data.csv")
+    print("Data loaded locally")
 
 # Prepare features
 X_train = train_df.drop(['CustomerID', 'ProdTaken'], axis=1)

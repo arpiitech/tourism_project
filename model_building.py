@@ -1,24 +1,20 @@
-import os
-import warnings
-
-import joblib
-import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.model_selection import GridSearchCV
+from huggingface_hub import HfApi, login
+import xgboost as xgb
 import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import xgboost as xgb
 from datasets import load_dataset
-from huggingface_hub import HfApi, login
-from sklearn.ensemble import (AdaBoostClassifier, GradientBoostingClassifier,
-                              RandomForestClassifier)
-from sklearn.metrics import (accuracy_score, classification_report, f1_score,
-                             precision_score, recall_score, roc_auc_score)
-from sklearn.model_selection import GridSearchCV
-from sklearn.tree import DecisionTreeClassifier
-
+import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+import os
 warnings.filterwarnings('ignore')
 
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -224,10 +220,6 @@ try:
         path_in_repo="best_model.joblib",
         repo_id=repo_id,
         token=HF_TOKEN
-    )
-    print(f"Best model registered to HuggingFace: {repo_id}")
-except Exception as e:
-    print(f"Error registering model: {e}")
     )
     print(f"Best model registered to HuggingFace: {repo_id}")
 except Exception as e:

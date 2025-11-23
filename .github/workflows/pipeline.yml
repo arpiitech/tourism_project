@@ -26,7 +26,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_registration.py
 
   data-prep:
@@ -49,7 +48,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_preparation.py
 
   model-training:
@@ -78,7 +76,6 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MLFLOW_TRACKING_URI: http://localhost:5000
         run: |
-          cd tourism_project
           python model_building.py
 
   deploy-hosting:
@@ -100,6 +97,5 @@ jobs:
       - name: Push files to Frontend Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          cd tourism_project/deployment
+        run: |/deployment
           python deploy_to_hf.py

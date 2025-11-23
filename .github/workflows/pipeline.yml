@@ -77,6 +77,11 @@ jobs:
         with:
           name: trained-model
           path: model_building/
+      - name: Upload deployment files
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-files
+          path: deployment/
 
   deploy-hosting:
     runs-on: ubuntu-latest
@@ -92,9 +97,18 @@ jobs:
         with:
           name: trained-model
           path: model_building/
+      - name: Download deployment files
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-files
+          path: deployment/
       - name: Install Dependencies
         run: |
-          pip install huggingface-hub streamlit
+          pip install huggingface-hub streamlit joblib
+      - name: Copy model to deployment directory
+        run: |
+          mkdir -p deployment/
+          cp model_building/best_model.joblib deployment/ || echo "Model file not found, continuing..."
       - name: Push files to Frontend Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

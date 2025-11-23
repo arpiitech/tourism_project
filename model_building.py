@@ -1,20 +1,24 @@
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
-from sklearn.model_selection import GridSearchCV
-from huggingface_hub import HfApi, login
-import xgboost as xgb
+import os
+import warnings
+
+import joblib
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
-from datasets import load_dataset
-import joblib
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
-import warnings
-import os
+import xgboost as xgb
+from datasets import load_dataset
+from huggingface_hub import HfApi, login
+from sklearn.ensemble import (AdaBoostClassifier, GradientBoostingClassifier,
+                              RandomForestClassifier)
+from sklearn.metrics import (accuracy_score, classification_report, f1_score,
+                             precision_score, recall_score, roc_auc_score)
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
+
 warnings.filterwarnings('ignore')
 
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -27,9 +31,9 @@ mlflow.set_experiment("tourism_package_prediction")
 
 # Load train and test data
 try:
-    train_dataset = load_dataset("arnavarpit/VUA-MLOPS-train", split="train")
+    train_dataset = load_dataset("arnavarpit/VUA-MLOPS/train", split="train")
     train_df = train_dataset.to_pandas()
-    test_dataset = load_dataset("arnavarpit/VUA-MLOPS-test", split="train")
+    test_dataset = load_dataset("arnavarpit/VUA-MLOPS/test", split="train")
     test_df = test_dataset.to_pandas()
     print("Data loaded from HuggingFace")
 
@@ -211,7 +215,7 @@ joblib.dump(best_model, "model_building/best_model.joblib")
 
 # Register best model to HuggingFace
 api = HfApi()
-repo_id = "arnavarpit/VUA-MLOPS-model"
+repo_id = "arnavarpit/VUA-MLOPS/model"
 
 try:
     api.create_repo(repo_id=repo_id, exist_ok=True, private=False)
@@ -220,6 +224,10 @@ try:
         path_in_repo="best_model.joblib",
         repo_id=repo_id,
         token=HF_TOKEN
+    )
+    print(f"Best model registered to HuggingFace: {repo_id}")
+except Exception as e:
+    print(f"Error registering model: {e}")
     )
     print(f"Best model registered to HuggingFace: {repo_id}")
 except Exception as e:

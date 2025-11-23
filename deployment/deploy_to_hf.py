@@ -3,13 +3,15 @@
 Deployment Script for Tourism Package Prediction Project
 """
 
-from huggingface_hub import HfApi, login
 import os
 
-HF_TOKEN = os.getenv('HF_TOKEN')
+from huggingface_hub import HfApi, login
+
+HF_TOKEN = os.getenv("HF_TOKEN")
 if not HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable not found")
 login(token=HF_TOKEN)
+
 
 def deploy_to_huggingface_space():
     """Deploy application to HuggingFace Spaces"""
@@ -17,12 +19,12 @@ def deploy_to_huggingface_space():
 
     try:
         api = HfApi()
-        space_id = "arnavarpit/tourism-prediction-app"
+        space_id = "arnavarpit/VUA-MLOPS"
 
         files_to_upload = [
             ("app.py", "app.py"),
             ("requirements.txt", "requirements.txt"),
-            ("Dockerfile", "Dockerfile")
+            ("Dockerfile", "Dockerfile"),
         ]
 
         print(f"Uploading files to space: {space_id}")
@@ -35,7 +37,7 @@ def deploy_to_huggingface_space():
                     path_in_repo=repo_path,
                     repo_id=space_id,
                     repo_type="space",
-                    token=HF_TOKEN
+                    token=HF_TOKEN,
                 )
                 print(f"{local_path} uploaded successfully")
 
@@ -47,5 +49,7 @@ def deploy_to_huggingface_space():
         print(f"Deployment error: {e}")
         return False
 
+
 if __name__ == "__main__":
+    deploy_to_huggingface_space()
     deploy_to_huggingface_space()

@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project_local/requirements.txt
+          pip install -r requirements.txt
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project_local/requirements.txt
+          pip install -r requirements.txt
       - name: Start MLflow Server
         run: |
           nohup mlflow ui --host 0.0.0.0 --port 5000 &  # Run MLflow UI in the background

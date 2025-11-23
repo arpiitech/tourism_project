@@ -1,15 +1,11 @@
 from huggingface_hub import login
-from datasets import Dataset, load_dataset
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+login(token=HF_TOKEN)
+
 import pandas as pd
 import numpy as np
-import os
-
-HF_TOKEN = os.getenv('HF_TOKEN')
-if not HF_TOKEN:
-    raise ValueError("HF_TOKEN environment variable not found")
-login(token=HF_TOKEN)
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from datasets import Dataset, load_dataset
 
 # Load data from HuggingFace
 try:
@@ -17,7 +13,7 @@ try:
     df = dataset.to_pandas()
     print(f"Dataset loaded from HuggingFace: {len(df)} rows")
 except:
-    df = pd.read_csv("data/tourism.csv")
+    df = pd.read_csv("tourism.csv")
     print(f"Dataset loaded locally: {len(df)} rows")
 
 # Data cleaning and preprocessing
@@ -95,29 +91,26 @@ train_df.insert(0, 'CustomerID', range(300000, 300000 + len(train_df)))
 test_df.insert(0, 'CustomerID', range(400000, 400000 + len(test_df)))
 
 # Save locally
-train_df.to_csv("data/train_data.csv", index=False)
-test_df.to_csv("data/test_data.csv", index=False)
+train_df.to_csv("tourism_project/data/train_data.csv", index=False)
+test_df.to_csv("tourism_project/data/test_data.csv", index=False)
 
 print(f"Data split completed!")
 print(f"Training set: {len(train_df)} samples")
 print(f"Test set: {len(test_df)} samples")
 
-# Ensure all columns are numeric for HuggingFace datasets
-print("\nData types before upload:")
-print(train_df.dtypes)
-for col in train_df.columns:
-    if train_df[col].dtype == 'object' and col != 'CustomerID':
-        print(f"Warning: {col} is still object type")
-    elif train_df[col].dtype.name == 'category':
-        train_df[col] = train_df[col].astype(int)
-        test_df[col] = test_df[col].astype(int)
-        print(f"Converted {col} from category to int")
-
 # Upload train dataset
 train_dataset = Dataset.from_pandas(train_df)
-train_dataset.push_to_hub("arnavarpit/VUA-MLOPS-train", private=False, token=HF_TOKEN)
+train_dataset.push_to_hub(
+    "arnavarpit/VUA-MLOPS-train",
+    private=False,
+    token=HF_TOKEN
+)
 
 # Upload test dataset
 test_dataset = Dataset.from_pandas(test_df)
-test_dataset.push_to_hub("arnavarpit/VUA-MLOPS-test", private=False, token=HF_TOKEN)
+test_dataset.push_to_hub(
+    "arnavarpit/VUA-MLOPS-test",
+    private=False,
+    token=HF_TOKEN
+)
 print("Processed datasets uploaded to HuggingFace!")

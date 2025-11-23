@@ -24,17 +24,21 @@ except ImportError:
 
 # HuggingFace authentication (if available)
 if HUGGINGFACE_AVAILABLE:
-    HF_TOKEN = os.getenv("HF_TOKEN")  # Use environment variable in production
-    try:
-        login(token=HF_TOKEN)
-        print("Successfully authenticated with HuggingFace")
-    except Exception as e:
-        print(f"Failed to authenticate with HuggingFace: {e}")
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    if HF_TOKEN:
+        try:
+            login(token=HF_TOKEN)
+            print("Successfully authenticated with HuggingFace")
+        except Exception as e:
+            print(f"Failed to authenticate with HuggingFace: {e}")
+            HUGGINGFACE_AVAILABLE = False
+    else:
+        print("HF_TOKEN not found in environment variables")
         HUGGINGFACE_AVAILABLE = False
 
 # Setup MLflow
 try:
-    mlflow.set_experiment("VUA-MLOPS-EXPERIMENT")
+    mlflow.set_experiment("VUA-MLOPS")
     print("MLflow experiment set successfully")
 except Exception as e:
     print(f"MLflow setup warning: {e}")

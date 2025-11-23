@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
       - name: Install Dependencies
         run: |
           pip install pandas datasets huggingface-hub
@@ -17,7 +21,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_registration.py
 
   data-prep:
@@ -25,14 +28,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project_local/requirements.txt
+          pip install -r requirements.txt
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_preparation.py
 
   model-training:
@@ -40,9 +46,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
       - name: Install Dependencies
         run: |
-          pip install -r tourism_project_local/requirements.txt
+          pip install -r requirements.txt
       - name: Start MLflow Server
         run: |
           nohup mlflow ui --host 0.0.0.0 --port 5000 &  # Run MLflow UI in the background
@@ -51,7 +61,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python model_building.py
 
   deploy-hosting:
@@ -59,6 +68,10 @@ jobs:
     needs: [model-training, data-prep, register-dataset]
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
       - name: Install Dependencies
         run: |
           pip install huggingface-hub streamlit
@@ -66,5 +79,5 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project_local/deployment
+          cd deployment
           python deploy_to_hf.py

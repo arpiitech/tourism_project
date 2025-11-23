@@ -18,7 +18,7 @@ try:
     df = dataset.to_pandas()
     print(f"Dataset loaded from HuggingFace: {len(df)} rows")
 except:
-    df = pd.read_csv("tourism.csv")
+    df = pd.read_csv("data/tourism.csv")
     print(f"Dataset loaded locally: {len(df)} rows")
 
 # Data cleaning and preprocessing

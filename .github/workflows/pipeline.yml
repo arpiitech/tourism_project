@@ -9,7 +9,11 @@ jobs:
   register-dataset:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
       - name: Install Dependencies
         run: |
           pip install pandas datasets huggingface-hub
@@ -23,7 +27,11 @@ jobs:
     needs: register-dataset
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
@@ -32,12 +40,26 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python data_preparation.py
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepared-data
+          path: data/
 
   model-training:
     needs: data-prep
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-data
+          path: data/
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
@@ -50,15 +72,43 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python model_building.py
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: model_building/
+      - name: Upload deployment files
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-files
+          path: deployment/
 
   deploy-hosting:
     runs-on: ubuntu-latest
     needs: [model-training, data-prep, register-dataset]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Download model artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: model_building/
+      - name: Download deployment files
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-files
+          path: deployment/
       - name: Install Dependencies
         run: |
-          pip install huggingface-hub streamlit
+          pip install huggingface-hub streamlit joblib
+      - name: Copy model to deployment directory
+        run: |
+          mkdir -p deployment/
+          cp model_building/best_model.joblib deployment/ || echo "Model file not found, continuing..."
       - name: Push files to Frontend Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

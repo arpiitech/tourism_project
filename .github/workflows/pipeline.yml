@@ -17,7 +17,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_registration.py
 
   data-prep:
@@ -32,7 +31,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python data_preparation.py
 
   model-training:
@@ -51,7 +49,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project
           python model_building.py
 
   deploy-hosting:
@@ -66,5 +63,5 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          cd tourism_project_local/deployment
+          cd deployment
           python deploy_to_hf.py

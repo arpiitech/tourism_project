@@ -59,11 +59,13 @@ print("Feature engineering...")
 df['IncomeCategory'] = pd.cut(df['MonthlyIncome'],
                              bins=[0, 15000, 25000, 35000, float('inf')],
                              labels=[0, 1, 2, 3])  # Use numeric labels
+df['IncomeCategory'] = df['IncomeCategory'].astype(int)  # Convert to int
 
 # Create age groups
 df['AgeGroup'] = pd.cut(df['Age'],
                        bins=[0, 25, 35, 45, 55, float('inf')],
                        labels=[0, 1, 2, 3, 4])  # Use numeric labels
+df['AgeGroup'] = df['AgeGroup'].astype(int)  # Convert to int
 
 # Encode categorical variables
 label_encoders = {}
@@ -101,6 +103,17 @@ test_df.to_csv("data/test_data.csv", index=False)
 print(f"Data split completed!")
 print(f"Training set: {len(train_df)} samples")
 print(f"Test set: {len(test_df)} samples")
+
+# Ensure all columns are numeric for HuggingFace datasets
+print("\nData types before upload:")
+print(train_df.dtypes)
+for col in train_df.columns:
+    if train_df[col].dtype == 'object' and col != 'CustomerID':
+        print(f"Warning: {col} is still object type")
+    elif train_df[col].dtype.name == 'category':
+        train_df[col] = train_df[col].astype(int)
+        test_df[col] = test_df[col].astype(int)
+        print(f"Converted {col} from category to int")
 
 # Upload train dataset
 train_dataset = Dataset.from_pandas(train_df)

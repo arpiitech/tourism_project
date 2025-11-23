@@ -40,6 +40,11 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python data_preparation.py
+      - name: Upload data artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: processed-data
+          path: data/
 
   model-training:
     needs: data-prep
@@ -50,6 +55,11 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.9"
+      - name: Download data artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: processed-data
+          path: data/
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
@@ -62,6 +72,11 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python model_building.py
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-model
+          path: model_building/
 
   deploy-hosting:
     runs-on: ubuntu-latest

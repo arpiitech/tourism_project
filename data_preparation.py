@@ -102,19 +102,22 @@ print(f"Data split completed!")
 print(f"Training set: {len(train_df)} samples")
 print(f"Test set: {len(test_df)} samples")
 
+# Ensure all columns are numeric for HuggingFace datasets
+print("\nData types before upload:")
+print(train_df.dtypes)
+for col in train_df.columns:
+    if train_df[col].dtype == 'object' and col != 'CustomerID':
+        print(f"Warning: {col} is still object type")
+    elif train_df[col].dtype.name == 'category':
+        train_df[col] = train_df[col].astype(int)
+        test_df[col] = test_df[col].astype(int)
+        print(f"Converted {col} from category to int")
+
 # Upload train dataset
 train_dataset = Dataset.from_pandas(train_df)
-train_dataset.push_to_hub(
-    "arnavarpit/VUA-MLOPS-train",
-    private=False,
-    token=HF_TOKEN
-)
+train_dataset.push_to_hub("arnavarpit/VUA-MLOPS-train", private=False, token=HF_TOKEN)
 
 # Upload test dataset
 test_dataset = Dataset.from_pandas(test_df)
-test_dataset.push_to_hub(
-    "arnavarpit/VUA-MLOPS-test",
-    private=False,
-    token=HF_TOKEN
-)
+test_dataset.push_to_hub("arnavarpit/VUA-MLOPS-test", private=False, token=HF_TOKEN)
 print("Processed datasets uploaded to HuggingFace!")

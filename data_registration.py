@@ -1,31 +1,28 @@
-from huggingface_hub import login, HfApi
-from datasets import Dataset
-import pandas as pd
 import os
+import pandas as pd
+from datasets import Dataset
+from huggingface_hub import login
 
 HF_TOKEN = os.getenv('HF_TOKEN')
 if not HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable not found")
 login(token=HF_TOKEN)
 
-# Load the dataset
-df = pd.read_csv("data/tourism.csv")
-print(f"Dataset loaded: {len(df)} rows")
-print("Dataset shape:", df.shape)
-print("\nDataset columns:", df.columns.tolist())
-print("\nFirst 5 rows:")
-print(df.head())
+# Load raw dataset
+try:
+    df = pd.read_csv("data/tourism.csv")
+    print(f"Dataset loaded: {len(df)} rows, {len(df.columns)} columns")
 
-# Create dataset object
-dataset = Dataset.from_pandas(df)
+    # Create HuggingFace dataset
+    dataset = Dataset.from_pandas(df)
 
-# Upload to HuggingFace Hub
-repo_id = "arnavarpit/VUA-MLOPS"
-dataset.push_to_hub(
-    repo_id,
-    private=False,
-    token=HF_TOKEN
-)
+    # Upload to HuggingFace
+    dataset.push_to_hub(
+        "arnavarpit/VUA-MLOPS",
+        private=False,
+        token=HF_TOKEN
+    )
+    print("Raw dataset uploaded to HuggingFace: arnavarpit/VUA-MLOPS")
 
-print(f"You can access it at: https://huggingface.co/datasets/{repo_id}")
-print(f"\nDataset uploaded successfully to: {repo_id}")
+except Exception as e:
+    print(f"Error uploading dataset: {e}")

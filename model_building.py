@@ -32,6 +32,14 @@ try:
     test_dataset = load_dataset("arnavarpit/VUA-MLOPS-test", split="train")
     test_df = test_dataset.to_pandas()
     print("Data loaded from HuggingFace")
+
+    # Convert any categorical columns back to numeric
+    for col in train_df.columns:
+        if train_df[col].dtype.name == 'category':
+            train_df[col] = train_df[col].astype(int)
+        if test_df[col].dtype.name == 'category':
+            test_df[col] = test_df[col].astype(int)
+
 except:
     train_df = pd.read_csv("data/train_data.csv")
     test_df = pd.read_csv("data/test_data.csv")
@@ -115,7 +123,30 @@ with mlflow.start_run(run_name="RandomForest"):
 
     models_results.append(("Random Forest", best_rf, rf_metrics['roc_auc']))
 
-# 3. XGBoost
+# 3. Gradient Boosting
+print("Training Gradient Boosting...")
+with mlflow.start_run(run_name="GradientBoosting"):
+    param_grid = {
+        'n_estimators': [100, 200],
+        'learning_rate': [0.05, 0.1, 0.15],
+        'max_depth': [3, 5, 7]
+    }
+
+    gb = GradientBoostingClassifier(random_state=42)
+    grid_search = GridSearchCV(gb, param_grid, cv=5, scoring='roc_auc', n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+
+    best_gb = grid_search.best_estimator_
+    mlflow.log_params(grid_search.best_params_)
+    mlflow.log_param("model_type", "GradientBoosting")
+
+    gb_metrics = evaluate_model(best_gb, X_test, y_test, "Gradient Boosting")
+    mlflow.log_metrics(gb_metrics)
+    mlflow.sklearn.log_model(best_gb, "model")
+
+    models_results.append(("Gradient Boosting", best_gb, gb_metrics['roc_auc']))
+
+# 4. XGBoost
 print("Training XGBoost...")
 with mlflow.start_run(run_name="XGBoost"):
     param_grid = {
@@ -138,29 +169,6 @@ with mlflow.start_run(run_name="XGBoost"):
     mlflow.xgboost.log_model(best_xgb, "model")
 
     models_results.append(("XGBoost", best_xgb, xgb_metrics['roc_auc']))
-
-# 4. Gradient Boosting
-print("Training Gradient Boosting...")
-with mlflow.start_run(run_name="GradientBoosting"):
-    param_grid = {
-        'n_estimators': [100, 200],
-        'learning_rate': [0.05, 0.1, 0.15],
-        'max_depth': [3, 5, 7]
-    }
-
-    gb = GradientBoostingClassifier(random_state=42)
-    grid_search = GridSearchCV(gb, param_grid, cv=5, scoring='roc_auc', n_jobs=-1)
-    grid_search.fit(X_train, y_train)
-
-    best_gb = grid_search.best_estimator_
-    mlflow.log_params(grid_search.best_params_)
-    mlflow.log_param("model_type", "GradientBoosting")
-
-    gb_metrics = evaluate_model(best_gb, X_test, y_test, "Gradient Boosting")
-    mlflow.log_metrics(gb_metrics)
-    mlflow.sklearn.log_model(best_gb, "model")
-
-    models_results.append(("Gradient Boosting", best_gb, gb_metrics['roc_auc']))
 
 # 5. AdaBoost
 print("Training AdaBoost...")

@@ -17,37 +17,8 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install pandas datasets huggingface-hub
-      - name: Upload Dataset to Hugging Face Hub
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          python data_registration.py
-
-  data-prep:
-    needs: register-dataset
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Run Data Preparation
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          python data_preparation.py
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: prepared-data
-          path: data/
-
   model-training:
-    needs: data-prep
+    needs: register-dataset
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
